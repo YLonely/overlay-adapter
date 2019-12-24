@@ -10,7 +10,7 @@ int copy_up(const char *source_path, const char *upper_path) {
     if (access(upper_dir, F_OK)) {
         // upper dir does not exist
         int res;
-        if (res = mkdir(upper_dir, 0644))
+        if (res = mkdirs(upper_dir))
             return res;
     }
     FILE *f_read, *f_write;

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 struct adapter_config {
     const char *source_dir;
     const char *upper_dir;

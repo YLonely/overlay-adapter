@@ -119,15 +119,16 @@ static int adapter_open(const char *path, struct fuse_file_info *fi) {
 
 static int adapter_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
     int fd, res;
-    char *t_path = source_file_path(path);
+    char *source_path = source_file_path(path);
     char *upper_path = upper_file_path(path);
+    char *t_path = source_path;
     if (exists(upper_path))
         t_path = upper_path;
     if (fi == NULL)
         fd = open(t_path, O_RDONLY);
     else
         fd = fi->fh;
-    free(t_path);
+    free(source_path);
     free(upper_path);
     if (fd == -1)
         return -errno;
@@ -143,7 +144,6 @@ static int adapter_write(const char *path, const char *buf, size_t size, off_t o
     char *upper_path = upper_file_path(path);
     int fd;
     if (!exists(upper_path)) {
-        fprintf(stderr, "write file does not exist in upper");
         return -errno;
     }
     if (fi == NULL)
@@ -152,7 +152,7 @@ static int adapter_write(const char *path, const char *buf, size_t size, off_t o
         fd = fi->fh;
     if (fd == -1)
         return -errno;
-
+    free(upper_path);
     int res = pwrite(fd, buf, size, offset);
     if (res == -1)
         return -errno;
@@ -288,10 +288,10 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "missing source directory\n");
         exit(1);
     }
-    // adapter_config.source_dir = "/root/adapter-test/source/";
-    // adapter_config.source_dir_len = strlen(adapter_config.source_dir);
-    // adapter_config.upper_dir = "/root/adapter-test/upper/";
-    // adapter_config.upper_dir_len = strlen(adapter_config.upper_dir);
+    if (!adapter_config.upper_dir) {
+        fprintf(stderr, "missing upper directory\n");
+        exit(1);
+    }
     umask(0);
     return fuse_main(args.argc, args.argv, &adapter_oper, NULL);
 }

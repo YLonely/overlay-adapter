@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 char *target_path(const char *path, const char *prefix, const size_t prefix_len) {
@@ -64,6 +65,20 @@ const char *abs_dir_path(const char *path) {
     return abs_path;
 }
 
-int mkdirs(const char *path){
-    
+int mkdirs(char *path) {
+    if (path[0] != '/')
+        return -1;
+    const size_t len = strlen(path);
+    int i;
+    for (i = 1; i < len; i++) {
+        if (path[i] == '/') {
+            path[i] = 0;
+            if (access(path, F_OK))
+                mkdir(path, 0644);
+            path[i] = '/';
+        }
+    }
+    if (access(path, F_OK))
+        mkdir(path, 0644);
+    return 0;
 }
